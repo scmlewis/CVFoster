@@ -218,3 +218,18 @@ class TFIDFEmbedding:
         
         return results
 
+
+# Cache the Azure embedding index - critical for Streamlit Cloud performance
+try:
+    import streamlit as st
+    @st.cache_resource
+    def get_azure_embedding_index() -> AzureEmbeddingIndex:
+        """Get cached Azure embedding index instance."""
+        logger.info("Creating cached Azure embedding index")
+        return AzureEmbeddingIndex()
+except ImportError:
+    # Fallback for non-Streamlit contexts
+    def get_azure_embedding_index() -> AzureEmbeddingIndex:
+        """Get Azure embedding index instance (non-cached fallback)."""
+        return AzureEmbeddingIndex()
+

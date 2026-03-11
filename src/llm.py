@@ -37,36 +37,73 @@ except ImportError:
     logger.warning("Azure OpenAI client not installed. Falling back to template-based rewriting.")
 
 
-def get_azure_client() -> Optional[AzureOpenAI]:
-    """
-    Initialize Azure OpenAI client using environment variables.
-    
-    Returns:
-        AzureOpenAI client or None if credentials not available
-    """
-    if not AZURE_AVAILABLE:
-        return None
-    
-    try:
-        api_key = os.getenv('AZURE_OPENAI_API_KEY')
-        endpoint = os.getenv('AZURE_ENDPOINT')
-        api_version = os.getenv('AZURE_API_VERSION')
+# Cache Azure client - critical for Streamlit Cloud performance
+try:
+    import streamlit as st
+    @st.cache_resource
+    def get_azure_client() -> Optional[AzureOpenAI]:
+        """
+        Initialize Azure OpenAI client using environment variables.
+        Cached to avoid reinitializing on every app run.
         
-        if not all([api_key, endpoint, api_version]):
-            logger.warning("Azure credentials not configured. Using template-based rewriting.")
+        Returns:
+            AzureOpenAI client or None if credentials not available
+        """
+        if not AZURE_AVAILABLE:
             return None
         
-        client = AzureOpenAI(
-            api_key=api_key,
-            api_version=api_version,
-            azure_endpoint=endpoint
-        )
-        logger.info("Azure OpenAI client initialized successfully")
-        return client
-    
-    except Exception as e:
-        logger.error(f"Failed to initialize Azure OpenAI client: {e}")
-        return None
+        try:
+            api_key = os.getenv('AZURE_OPENAI_API_KEY')
+            endpoint = os.getenv('AZURE_ENDPOINT')
+            api_version = os.getenv('AZURE_API_VERSION')
+            
+            if not all([api_key, endpoint, api_version]):
+                logger.warning("Azure credentials not configured. Using template-based rewriting.")
+                return None
+            
+            client = AzureOpenAI(
+                api_key=api_key,
+                api_version=api_version,
+                azure_endpoint=endpoint
+            )
+            logger.info("Azure OpenAI client initialized successfully (cached)")
+            return client
+        
+        except Exception as e:
+            logger.error(f"Failed to initialize Azure OpenAI client: {e}")
+            return None
+except ImportError:
+    # Fallback for non-Streamlit contexts (testing)
+    def get_azure_client() -> Optional[AzureOpenAI]:
+        """
+        Initialize Azure OpenAI client using environment variables.
+        
+        Returns:
+            AzureOpenAI client or None if credentials not available
+        """
+        if not AZURE_AVAILABLE:
+            return None
+        
+        try:
+            api_key = os.getenv('AZURE_OPENAI_API_KEY')
+            endpoint = os.getenv('AZURE_ENDPOINT')
+            api_version = os.getenv('AZURE_API_VERSION')
+            
+            if not all([api_key, endpoint, api_version]):
+                logger.warning("Azure credentials not configured. Using template-based rewriting.")
+                return None
+            
+            client = AzureOpenAI(
+                api_key=api_key,
+                api_version=api_version,
+                azure_endpoint=endpoint
+            )
+            logger.info("Azure OpenAI client initialized successfully")
+            return client
+        
+        except Exception as e:
+            logger.error(f"Failed to initialize Azure OpenAI client: {e}")
+            return None
 
 
 def expand_common_abbreviations(text: str) -> str:

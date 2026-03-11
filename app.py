@@ -27,7 +27,7 @@ except Exception:
 # Local imports
 from src.parse import CVParser
 from src.preprocess import TextPreprocessor
-from src.embedding_azure import AzureEmbeddingIndex, TFIDFEmbedding
+from src.embedding_azure import AzureEmbeddingIndex, TFIDFEmbedding, get_azure_embedding_index
 from src.matching import JobMatcher
 from src.llm import CVRewriter, get_azure_client
 from src.database import get_db
@@ -332,9 +332,9 @@ def page_job_matching():
     embedding_index = None
     use_azure = False
     
-    # Try Azure OpenAI first
+    # Try Azure OpenAI first (cached)
     try:
-        azure_index = AzureEmbeddingIndex()
+        azure_index = get_azure_embedding_index()
         if azure_index.available and azure_index.client is not None:
             # Test that Azure is working by trying a simple operation
             test_embedding = azure_index.embed_text("test")
