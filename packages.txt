@@ -9,3 +9,6 @@ zlib1g-dev
 libxml2-dev
 libxslt1-dev
 build-essential
+python3-dev
+libopenblas-dev
+gfortran
