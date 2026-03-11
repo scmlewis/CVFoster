@@ -1,0 +1,65 @@
+[
+  {
+    "job_id": "job_001",
+    "title": "Senior Software Engineer",
+    "company": "Tech Startup Co",
+    "description": "Looking for a senior software engineer with 5+ years of experience in full-stack development. Strong background in Python, JavaScript, and cloud architecture required.",
+    "skills": "Python, JavaScript, AWS, Docker, React, PostgreSQL",
+    "seniority": "senior",
+    "location": "Remote"
+  },
+  {
+    "job_id": "job_002",
+    "title": "Data Scientist",
+    "company": "Analytics Pro",
+    "description": "We are seeking a data scientist to build machine learning models and deploy them to production. Experience with NLP and deep learning required.",
+    "skills": "Python, TensorFlow, PyTorch, SQL, Scikit-learn, Statistics",
+    "seniority": "mid",
+    "location": "San Francisco"
+  },
+  {
+    "job_id": "job_003",
+    "title": "Frontend Developer",
+    "company": "Design Studio",
+    "description": "Mid-level frontend developer needed for React and Vue projects. CSS and responsive design skills essential.",
+    "skills": "React, Vue, CSS, JavaScript, TypeScript, HTML5",
+    "seniority": "mid",
+    "location": "New York"
+  },
+  {
+    "job_id": "job_004",
+    "title": "DevOps Engineer",
+    "company": "Cloud Systems Inc",
+    "description": "Experienced DevOps engineer to manage infrastructure and automate deployments. Kubernetes and CI/CD pipeline expertise required.",
+    "skills": "Kubernetes, Docker, CI/CD, AWS, Azure, Linux, Jenkins",
+    "seniority": "senior",
+    "location": "Boston"
+  },
+  {
+    "job_id": "job_005",
+    "title": "Junior Developer",
+    "company": "Code Academy",
+    "description": "Entry-level developer role. We welcome recent graduates and bootcamp graduates. Basic web development skills and eagerness to learn required.",
+    "skills": "JavaScript, HTML, CSS, Git, REST APIs",
+    "seniority": "entry",
+    "location": "Remote"
+  },
+  {
+    "job_id": "job_006",
+    "title": "Machine Learning Engineer",
+    "company": "AI Solutions Ltd",
+    "description": "Build and deploy ML models for production systems. Experience with model optimization and serving infrastructure required.",
+    "skills": "Python, TensorFlow, PyTorch, Kubernetes, AWS SageMaker",
+    "seniority": "senior",
+    "location": "Seattle"
+  },
+  {
+    "job_id": "job_007",
+    "title": "Full Stack Engineer",
+    "company": "Web Agency Pro",
+    "description": "Full stack engineer to build web applications. Proficiency in both frontend and backend development required.",
+    "skills": "JavaScript, Node.js, React, MongoDB, Express, SQL",
+    "seniority": "mid",
+    "location": "Austin"
+  }
+]
