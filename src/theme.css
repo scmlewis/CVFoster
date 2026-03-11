@@ -7,9 +7,9 @@
 :root {
   /* Primary Brand Colors - Teal/Green Palette */
   --primary-dark: #0F2D2D;      /* Dark teal background */
-  --primary-main: #06A87D;      /* Main teal accent */
-  --primary-light: #00A86B;     /* Light teal */
-  --primary-lighter: #48C9B0;   /* Lighter teal for hovers */
+  --primary-main: #00C080;      /* Vibrant teal/green accent (improved visibility) */
+  --primary-light: #00B870;     /* Light teal */
+  --primary-lighter: #4DD9A8;   /* Lighter teal for hovers */
   --secondary-teal: #20B2AA;    /* Secondary teal */
   
   /* Base Colors - Dark Mode */
@@ -20,14 +20,14 @@
   
   /* Text Colors */
   --text-primary: #FFFFFF;      /* Primary text */
-  --text-secondary: #B0B0B0;    /* Secondary text */
-  --text-muted: #808080;        /* Muted/disabled text */
-  --text-accent: #06A87D;       /* Accent text */
+  --text-secondary: #D0D0D0;    /* Secondary text (improved contrast) */
+  --text-muted: #909090;        /* Muted/disabled text */
+  --text-accent: #00C080;       /* Accent text */
   
   /* Border & Shadow */
   --border-color: #3A3A3A;      /* Default border */
   --border-light: #2E2E2E;      /* Light border */
-  --border-accent: #06A87D;     /* Accent border */
+  --border-accent: #00C080;     /* Accent border */
   
   /* Status Colors - Optimized for dark mode */
   --success-color: #4CAF50;     /* Success/positive */
@@ -223,7 +223,7 @@ select:focus {
   outline: none;
   border-color: var(--primary-main);
   background-color: var(--bg-hover);
-  box-shadow: 0 0 0 3px rgba(6, 168, 125, 0.1);
+  box-shadow: 0 0 0 3px rgba(0, 192, 128, 0.1);
 }
 
 input[type="text"]::placeholder,
@@ -287,7 +287,7 @@ button[type="button"],
 
 button[type="button"]:hover,
 .st-button.secondary > button:hover {
-  background-color: rgba(6, 168, 125, 0.15);
+  background-color: rgba(0, 192, 128, 0.15);
   border-color: var(--primary-lighter);
   color: var(--primary-lighter);
   box-shadow: var(--shadow-md);
@@ -295,7 +295,7 @@ button[type="button"]:hover,
 
 button[type="button"]:active,
 .st-button.secondary > button:active {
-  background-color: rgba(6, 168, 125, 0.25);
+  background-color: rgba(0, 192, 128, 0.25);
 }
 
 /* Disabled Button */
@@ -358,7 +358,7 @@ button:disabled:hover {
 
 /* Match Result Card */
 .match-card {
-  background: linear-gradient(135deg, var(--bg-surface) 0%, rgba(6, 168, 125, 0.05) 100%);
+  background: linear-gradient(135deg, var(--bg-surface) 0%, rgba(0, 192, 128, 0.05) 100%);
   border: 1px solid var(--border-color);
   border-left: 4px solid var(--primary-main);
   border-radius: var(--radius-lg);
@@ -395,7 +395,7 @@ button:disabled:hover {
   text-align: center;
   font-weight: 700;
   font-size: var(--font-size-xl);
-  box-shadow: 0 4px 12px rgba(6, 168, 125, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 192, 128, 0.3);
 }
 
 /* ============================================
