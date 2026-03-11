@@ -45,6 +45,10 @@ env/
 # Data
 data/samples/*
 !data/samples/.gitkeep
+!data/samples/Sample_CV_*.txt
+!data/samples/Sample_CV_*.docx
+!data/samples/README.md
+!data/samples/create_sample_docx.py
 data/index/
 *.pickle
 *.pkl
