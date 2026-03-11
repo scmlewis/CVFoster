@@ -1,0 +1,38 @@
+# CVFoster Dark Theme - Professional Teal/Green Palette
+# Custom dark mode with teal/green accents for consistency
+[theme]
+base = "dark"
+primaryColor = "#06A87D"
+backgroundColor = "#1A1A1A"
+secondaryBackgroundColor = "#242424"
+codeBackgroundColor = "#0F2D2D"
+textColor = "#FFFFFF"
+linkColor = "#06A87D"
+borderColor = "#3A3A3A"
+showWidgetBorder = false
+showSidebarBorder = false
+baseRadius = "8px"
+buttonRadius = "8px"
+baseFontSize = 16
+baseFontWeight = 400
+headingFontWeights = [700, 700, 600, 600, 600, 600]
+headingFontSizes = ["48px", "36px", "28px", "22px", "18px", "16px"]
+chartCategoricalColors = ["#06A87D", "#48C9B0", "#00A86B", "#20B2AA", "#4CAF50", "#66BB6A", "#B0B0B0"]
+
+[theme.sidebar]
+backgroundColor = "#1A1A1A"
+secondaryBackgroundColor = "#242424"
+codeBackgroundColor = "#0F2D2D"
+borderColor = "#3A3A3A"
+textColor = "#FFFFFF"
+
+[client]
+showErrorDetails = true
+toolbarMode = "minimal"
+
+[logger]
+level = "info"
+
+[server]
+maxUploadSize = 200
+enableXsrfProtection = true

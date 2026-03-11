@@ -38,7 +38,8 @@ env/
 .env
 
 # Streamlit
-.streamlit/
+.streamlit/secrets.toml
+.streamlit/cache
 *.streamlit_cache/
 
 # Data

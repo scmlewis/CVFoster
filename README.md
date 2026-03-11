@@ -10,14 +10,23 @@ A Streamlit app for CV parsing, job matching, and AI-powered CV optimization.
 - OCR fallback for scanned PDFs
 
 ✅ **Job Matching**
-- Semantic similarity matching using embeddings
+- Semantic similarity matching using embeddings (Azure OpenAI or TF-IDF)
 - Weighted scoring: semantic (50%) + keyword overlap (30%) + seniority level (20%)
 - Explainable results with matched CV sections
+- Robust error handling with automatic fallback
 
 ✅ **CV Rewriting**
-- AI-powered text rewriting using DistilBART
-- Concise mode for Phase 1 MVP
+- AI-powered text rewriting using Azure OpenAI
 - Before/after comparison and download
+- Template-based fallback if Azure not available
+
+✅ **Professional UI/UX**
+- Custom dark theme with teal/green professional color palette
+- Responsive design optimized for all screen sizes
+- Smooth animations and transitions (200ms)
+- Progress indicators and loading states
+- Custom scrollbars and styled components
+- Accessibility features (WCAG AA color contrast, keyboard navigation)
 
 ## Quick Start
 
@@ -54,7 +63,23 @@ streamlit run app.py
 
 The app will open at `http://localhost:8501`
 
-### 4. Usage
+### 4. Deploy to Streamlit Cloud (Optional)
+
+For production deployment on Streamlit Cloud:
+
+1. **Push code to GitHub** (your repository)
+2. **Go to [Streamlit Cloud](https://share.streamlit.io)**
+3. **Click "New app"** → Select your repository, branch, and `app.py`
+4. **Add Secrets** (Settings → Secrets tab):
+   ```toml
+   AZURE_OPENAI_API_KEY = "your-key-here"
+   AZURE_ENDPOINT = "https://your-resource.openai.azure.com/"
+   AZURE_API_VERSION = "2024-02-15-preview"
+   AZURE_MODEL = "gpt-4o-mini"
+   SKIP_LLM_INIT = false
+   ```
+
+### 5. Usage
 
 1. **Upload & Parse**: Go to "Upload & Parse" and upload your CV (PDF, DOCX, or TXT)
 2. **Job Matching**: Find relevant job postings based on your CV
@@ -69,13 +94,20 @@ CVFoster/
 ├── README.md                        # This file
 ├── PLAN.md                          # Project plan and specifications
 │
+├── .streamlit/
+│   ├── config.toml                  # Streamlit theme configuration (dark mode)
+│   └── secrets.toml                 # Secrets template (NOT committed to GitHub)
+│
 ├── src/
 │   ├── parse.py                     # CV parsing (PDF/DOCX/TXT)
 │   ├── preprocess.py                # Text cleaning and chunking
 │   ├── embed_idx.py                 # Embeddings and FAISS indexing
 │   ├── matching.py                  # Job matching with scoring
-│   ├── llm.py                       # CV rewriting with DistilBART
-│   └── ui_helpers.py                # Streamlit UI components
+│   ├── llm.py                       # CV rewriting with Azure OpenAI
+│   ├── ui_helpers.py                # Streamlit UI components with styling
+│   ├── theme.css                    # Dark theme CSS (teal/green palette)
+│   ├── css_injection.py             # CSS injection utility
+│   └── database.py                  # Database operations
 │
 └── data/
     ├── jobs/

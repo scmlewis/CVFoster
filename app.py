@@ -32,6 +32,7 @@ from src.matching import JobMatcher
 from src.llm import CVRewriter, get_azure_client
 from src.database import get_db
 from src.ui_helpers import *
+from src.css_injection import inject_theme_css
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -45,15 +46,8 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS
-st.markdown("""
-<style>
-:root {
-    --primary-color: #1f77b4;
-    --secondary-color: #ff7f0e;
-}
-</style>
-""", unsafe_allow_html=True)
+# Inject custom dark theme CSS
+inject_theme_css("src/theme.css")
 
 
 class AppState:
@@ -335,14 +329,27 @@ def page_job_matching():
     
     # Initialize embedding system (Azure first, fallback to TF-IDF)
     embedding_method = "TF-IDF"
-    embedding_index = AzureEmbeddingIndex()
+    embedding_index = None
+    use_azure = False
     
-    if embedding_index.available:
-        embedding_method = "Azure OpenAI"
-        st.success("✅ Using Azure OpenAI embeddings for semantic matching")
-    else:
+    # Try Azure OpenAI first
+    try:
+        azure_index = AzureEmbeddingIndex()
+        if azure_index.available and azure_index.client is not None:
+            # Test that Azure is working by trying a simple operation
+            test_embedding = azure_index.embed_text("test")
+            if test_embedding is not None:
+                embedding_index = azure_index
+                embedding_method = "Azure OpenAI"
+                use_azure = True
+                st.success("✅ Using Azure OpenAI embeddings for semantic matching")
+    except Exception as e:
+        logger.warning(f"Azure embedding initialization failed: {e}")
+    
+    # Fall back to TF-IDF if Azure didn't work
+    if not use_azure:
         embedding_index = TFIDFEmbedding()
-        st.info("💡 Using lightweight TF-IDF matching (Azure OpenAI not configured)")
+        st.info("💡 Using lightweight TF-IDF matching (Azure OpenAI not available)")
     
     # Load jobs
     if 'job_postings' not in st.session_state:
@@ -366,84 +373,109 @@ def page_job_matching():
         with st.spinner("Analyzing your CV and matching against job postings..."):
             matches = []
             
-            # Score each job
-            for job_id, job_data in st.session_state.job_postings.items():
-                job_text = f"{job_data.get('title', '')} {job_data.get('description', '')} {job_data.get('skills', '')}"
-                
-                # Get semantic similarity
-                if isinstance(embedding_index, AzureEmbeddingIndex):
-                    # Use Azure OpenAI for semantic matching
-                    semantic_score = embedding_index.compute_similarity(
-                        st.session_state.state.cv_text,
-                        job_text
-                    )
-                else:
-                    # For TF-IDF: compute similarity using cv as query
-                    # Normalize TF-IDF scores to 0-1 range (they're already normalized by default)
-                    results = embedding_index.search_similar(st.session_state.state.cv_text, k=len(st.session_state.job_postings))
-                    semantic_score = next((r['similarity_score'] for r in results if r.get('job_id') == job_id), 0.0)
-                
-                # Get keyword overlap score
-                keyword_score = JobMatcher.calculate_keyword_score(
-                    st.session_state.state.cv_text,
-                    job_text,
-                    weight=0.3
-                )
-                
-                # Get seniority score
-                seniority_score = JobMatcher.calculate_seniority_score(
-                    st.session_state.state.cv_text,
-                    job_text,
-                    weight=0.2
-                )
-                
-                # Combined score (semantic + keyword + seniority)
-                combined_score = (semantic_score * 0.5) + keyword_score + seniority_score
-                
-                matches.append({
-                    'job_id': job_id,
-                    'title': job_data.get('title', 'N/A'),
-                    'company': job_data.get('company', 'N/A'),
-                    'location': job_data.get('location', 'N/A'),
-                    'description': job_data.get('description', 'No description available'),
-                    'skills': job_data.get('skills', ''),
-                    'seniority': job_data.get('seniority', 'N/A'),
-                    'match_score': combined_score,
-                    'score_breakdown': {
-                        'semantic_pct': semantic_score * 100,
-                        'keyword_pct': keyword_score * 100,
-                        'seniority_pct': seniority_score * 100
-                    },
-                    'embedding_method': embedding_method
-                })
-            
-            # Sort by score and get top matches
-            matches.sort(key=lambda x: x['match_score'], reverse=True)
-            top_matches = matches[:5]
-            
-            # Save to database
             try:
-                db = get_db()
-                if hasattr(st.session_state.state, 'cv_id') and st.session_state.state.cv_id:
-                    for match in top_matches:
-                        db.save_match(
-                            cv_id=st.session_state.state.cv_id,
-                            match_data={
-                                'job_id': match.get('job_id'),
-                                'job_title': match.get('title'),
-                                'company': match.get('company'),
-                                'score': match.get('match_score', 0),
-                                'semantic_score': match.get('score_breakdown', {}).get('semantic_pct', 0),
-                                'keyword_score': match.get('score_breakdown', {}).get('keyword_pct', 0),
-                                'seniority_score': match.get('score_breakdown', {}).get('seniority_pct', 0),
-                                'embedding_method': embedding_method
-                            }
+                # Score each job
+                for job_id, job_data in st.session_state.job_postings.items():
+                    job_text = f"{job_data.get('title', '')} {job_data.get('description', '')} {job_data.get('skills', '')}"
+                    
+                    # Get semantic similarity
+                    try:
+                        if use_azure and isinstance(embedding_index, AzureEmbeddingIndex):
+                            # Use Azure OpenAI for semantic matching
+                            semantic_score = embedding_index.compute_similarity(
+                                st.session_state.state.cv_text,
+                                job_text
+                            )
+                            # If Azure fails, fall back to 0.0
+                            if semantic_score is None:
+                                semantic_score = 0.0
+                        else:
+                            # For TF-IDF: compute similarity using cv as query
+                            results = embedding_index.search_similar(st.session_state.state.cv_text, k=len(st.session_state.job_postings))
+                            semantic_score = next((r['similarity_score'] for r in results if r.get('job_id') == job_id), 0.0)
+                    except Exception as e:
+                        logger.error(f"Error computing semantic score for job {job_id}: {e}")
+                        semantic_score = 0.0
+                    
+                    # Get keyword overlap score
+                    try:
+                        keyword_score = JobMatcher.calculate_keyword_score(
+                            st.session_state.state.cv_text,
+                            job_text,
+                            weight=0.3
                         )
+                    except Exception as e:
+                        logger.error(f"Error computing keyword score for job {job_id}: {e}")
+                        keyword_score = 0.0
+                    
+                    # Get seniority score
+                    try:
+                        seniority_score = JobMatcher.calculate_seniority_score(
+                            st.session_state.state.cv_text,
+                            job_text,
+                            weight=0.2
+                        )
+                    except Exception as e:
+                        logger.error(f"Error computing seniority score for job {job_id}: {e}")
+                        seniority_score = 0.0
+                    
+                    # Combined score (semantic + keyword + seniority)
+                    combined_score = (semantic_score * 0.5) + keyword_score + seniority_score
+                    
+                    matches.append({
+                        'job_id': job_id,
+                        'title': job_data.get('title', 'N/A'),
+                        'company': job_data.get('company', 'N/A'),
+                        'location': job_data.get('location', 'N/A'),
+                        'description': job_data.get('description', 'No description available'),
+                        'skills': job_data.get('skills', ''),
+                        'seniority': job_data.get('seniority', 'N/A'),
+                        'match_score': combined_score,
+                        'score_breakdown': {
+                            'semantic_pct': semantic_score * 100,
+                            'keyword_pct': keyword_score * 100,
+                            'seniority_pct': seniority_score * 100
+                        },
+                        'embedding_method': embedding_method
+                    })
+                
+                # Sort by score and get top matches
+                matches.sort(key=lambda x: x['match_score'], reverse=True)
+                top_matches = matches[:5]
+                
+                # Save to database
+                try:
+                    db = get_db()
+                    if hasattr(st.session_state.state, 'cv_id') and st.session_state.state.cv_id:
+                        for match in top_matches:
+                            db.save_match(
+                                cv_id=st.session_state.state.cv_id,
+                                match_data={
+                                    'job_id': match.get('job_id'),
+                                    'job_title': match.get('title'),
+                                    'company': match.get('company'),
+                                    'score': match.get('match_score', 0),
+                                    'semantic_score': match.get('score_breakdown', {}).get('semantic_pct', 0),
+                                    'keyword_score': match.get('score_breakdown', {}).get('keyword_pct', 0),
+                                    'seniority_score': match.get('score_breakdown', {}).get('seniority_pct', 0),
+                                    'embedding_method': embedding_method
+                                }
+                            )
+                except Exception as e:
+                    logger.warning(f"Could not save matches to database: {e}")
+                
+                st.markdown("## Matching Results")
+                render_matches_list(top_matches)
+            
             except Exception as e:
-                logger.warning(f"Could not save matches to database: {e}")
-        
-        st.markdown("## Matching Results")
-        render_matches_list(top_matches)
+                logger.error(f"Job matching failed: {e}", exc_info=True)
+                st.error(f"❌ An error occurred during job matching: {str(e)}")
+                render_info_box(
+                    "Matching Failed",
+                    f"There was an issue processing your CV. Please ensure your CV text has been properly loaded.",
+                    icon="⚠️",
+                    style="error"
+                )
 
 
 def page_review():
