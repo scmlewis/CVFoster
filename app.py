@@ -334,6 +334,24 @@ def page_job_matching():
         style="green",
     )
     
+    # Check if embedding features are available
+    try:
+        test_index = EmbeddingIndex()
+        if not test_index.available:
+            st.error("⚠️ Job Matching feature requires additional ML libraries (sentence-transformers, torch, faiss)")
+            st.info("This feature is disabled on Streamlit Cloud free tier due to resource limits.\n\n"
+                   "To use it locally:\n"
+                   "```\n"
+                   "pip install sentence-transformers torch faiss-cpu\n"
+                   "python -m spacy download en_core_web_sm\n"
+                   "streamlit run app.py\n"
+                   "```")
+            return
+    except Exception as e:
+        st.error(f"⚠️ Job Matching feature unavailable: {str(e)}")
+        st.info("This feature requires optional dependencies that aren't installed.")
+        return
+    
     if st.session_state.state.cv_text is None:
         st.warning("Please upload and parse a CV first on the Upload & Parse page.")
         return
