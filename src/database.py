@@ -394,6 +394,32 @@ class DatabaseManager:
         
         return {}
     
+    def delete_cv(self, cv_id: int) -> bool:
+        """
+        Delete a CV and all related data (matches, rewrites, variants).
+        Foreign key constraints with ON DELETE CASCADE handle related records.
+        
+        Args:
+            cv_id: CV database ID
+        
+        Returns:
+            True if successful, False otherwise
+        """
+        try:
+            conn = self._connect()
+            cursor = conn.cursor()
+            
+            # Delete CV - cascade will remove all related records
+            cursor.execute('DELETE FROM cvs WHERE id = ?', (cv_id,))
+            conn.commit()
+            
+            logger.info(f"Deleted CV (ID: {cv_id}) and all related records")
+            return True
+        
+        except Exception as e:
+            logger.error(f"Failed to delete CV: {e}")
+            return False
+    
     def close(self):
         """Close database connection."""
         if self.conn:

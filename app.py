@@ -708,6 +708,34 @@ def page_history():
     
     db = get_db()
     
+    # Initialize session state for CV viewing
+    if 'selected_cv_id' not in st.session_state:
+        st.session_state.selected_cv_id = None
+    if 'confirm_delete_id' not in st.session_state:
+        st.session_state.confirm_delete_id = None
+    
+    # Handle CV view display
+    if st.session_state.selected_cv_id:
+        cv_data = db.get_cv(st.session_state.selected_cv_id)
+        if cv_data:
+            st.markdown(f"### 📄 {cv_data['filename']}")
+            
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.metric("Words", cv_data['num_words'])
+            with col2:
+                st.metric("Uploaded", cv_data['upload_date'])
+            with col3:
+                st.metric("Parsed", cv_data['parsed_date'])
+            
+            st.markdown("#### Full CV Text")
+            st.text_area("CV Content", value=cv_data['text'], height=300, disabled=True)
+            
+            if st.button("← Back to CV List"):
+                st.session_state.selected_cv_id = None
+                st.rerun()
+        return
+    
     st.markdown("### Your Uploaded CVs")
     
     # Get list of all CVs
@@ -717,7 +745,6 @@ def page_history():
         st.info("📁 No CVs uploaded yet. Start by uploading a CV on the **Upload & Parse** page.")
         return
     
-    # Create tabs for different views
     st.markdown("#### Your Uploaded CVs")
     
     for cv in cvs:
@@ -730,11 +757,28 @@ def page_history():
         with col2:
             if st.button("📂 View", key=f"view_{cv['id']}", use_container_width=True):
                 st.session_state.selected_cv_id = cv['id']
+                st.rerun()
         
         with col3:
             if st.button("🗑️ Delete", key=f"delete_{cv['id']}", use_container_width=True):
-                # TODO: Implement delete functionality
-                st.warning("Delete not yet implemented")
+                st.session_state.confirm_delete_id = cv['id']
+        
+        # Show delete confirmation modal
+        if st.session_state.confirm_delete_id == cv['id']:
+            st.warning(f"⚠️ Are you sure you want to delete '{cv['filename']}'? This cannot be undone.")
+            col_a, col_b = st.columns(2)
+            with col_a:
+                if st.button("✅ Confirm Delete", key=f"confirm_delete_{cv['id']}"):
+                    if db.delete_cv(cv['id']):
+                        st.success(f"Deleted '{cv['filename']}'")
+                        st.session_state.confirm_delete_id = None
+                        st.rerun()
+                    else:
+                        st.error("Failed to delete CV")
+            with col_b:
+                if st.button("❌ Cancel", key=f"cancel_delete_{cv['id']}"):
+                    st.session_state.confirm_delete_id = None
+                    st.rerun()
         
         st.divider()
 
