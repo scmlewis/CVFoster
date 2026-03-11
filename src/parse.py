@@ -7,8 +7,19 @@ import re
 import logging
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
-import fitz  # PyMuPDF
 from docx import Document
+
+# Try to import PDF library - pypdf is more cloud-friendly
+try:
+    from pypdf import PdfReader
+    PDF_AVAILABLE = True
+except ImportError:
+    try:
+        import fitz  # PyMuPDF fallback
+        PDF_AVAILABLE = True
+    except ImportError:
+        PDF_AVAILABLE = False
+        logger.warning("No PDF library available - PDF parsing disabled")
 
 logger = logging.getLogger(__name__)
 
@@ -38,24 +49,46 @@ class CVParser:
             Tuple of (extracted_text, metadata)
         """
         try:
-            doc = fitz.open(file_path)
-            text = ""
-            page_count = len(doc)
+            # Try pypdf first (more cloud-friendly)
+            try:
+                from pypdf import PdfReader
+                reader = PdfReader(file_path)
+                text = ""
+                page_count = len(reader.pages)
+                
+                for page_num, page in enumerate(reader.pages):
+                    text += f"\n--- Page {page_num + 1} ---\n"
+                    text += page.extract_text() or ""
+                
+                metadata = {
+                    'source': file_path,
+                    'format': 'pdf',
+                    'pages': page_count,
+                    'extraction_method': 'pypdf'
+                }
+                
+                return text, metadata
+            except ImportError:
+                # Fallback to PyMuPDF if pypdf not available
+                import fitz
+                doc = fitz.open(file_path)
+                text = ""
+                page_count = len(doc)
 
-            for page_num, page in enumerate(doc):
-                text += f"\n--- Page {page_num + 1} ---\n"
-                text += page.get_text()
+                for page_num, page in enumerate(doc):
+                    text += f"\n--- Page {page_num + 1} ---\n"
+                    text += page.get_text()
 
-            doc.close()
+                doc.close()
 
-            metadata = {
-                'source': file_path,
-                'format': 'pdf',
-                'pages': page_count,
-                'extraction_method': 'pdf_parser'
-            }
+                metadata = {
+                    'source': file_path,
+                    'format': 'pdf',
+                    'pages': page_count,
+                    'extraction_method': 'pymupdf'
+                }
 
-            return text, metadata
+                return text, metadata
 
         except Exception as e:
             logger.error(f"PDF parsing failed for {file_path}: {e}")
