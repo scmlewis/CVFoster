@@ -405,17 +405,17 @@ def page_job_matching():
                     'title': job_data.get('title', 'N/A'),
                     'company': job_data.get('company', 'N/A'),
                     'location': job_data.get('location', 'N/A'),
-                    'score': combined_score,
+                    'match_score': combined_score,
                     'score_breakdown': {
-                        'semantic': semantic_score * 100,
-                        'keyword': keyword_score * 100,
-                        'seniority': seniority_score * 100
+                        'semantic_pct': semantic_score * 100,
+                        'keyword_pct': keyword_score * 100,
+                        'seniority_pct': seniority_score * 100
                     },
                     'embedding_method': embedding_method
                 })
             
             # Sort by score and get top matches
-            matches.sort(key=lambda x: x['score'], reverse=True)
+            matches.sort(key=lambda x: x['match_score'], reverse=True)
             top_matches = matches[:5]
             
             # Save to database
@@ -429,10 +429,10 @@ def page_job_matching():
                                 'job_id': match.get('job_id'),
                                 'job_title': match.get('title'),
                                 'company': match.get('company'),
-                                'score': match.get('score', 0),
-                                'semantic_score': match.get('score_breakdown', {}).get('semantic', 0),
-                                'keyword_score': match.get('score_breakdown', {}).get('keyword', 0),
-                                'seniority_score': match.get('score_breakdown', {}).get('seniority', 0),
+                                'score': match.get('match_score', 0),
+                                'semantic_score': match.get('score_breakdown', {}).get('semantic_pct', 0),
+                                'keyword_score': match.get('score_breakdown', {}).get('keyword_pct', 0),
+                                'seniority_score': match.get('score_breakdown', {}).get('seniority_pct', 0),
                                 'embedding_method': embedding_method
                             }
                         )
