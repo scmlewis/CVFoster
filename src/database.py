@@ -9,6 +9,7 @@ import logging
 from datetime import datetime
 from typing import Dict, List, Optional
 from pathlib import Path
+import os
 
 try:
     import streamlit as st
@@ -18,8 +19,21 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
-# Database file path
-DB_PATH = Path(__file__).parent.parent / "data" / "cvfoster.db"
+# Determine database path - use writable location
+def _get_db_path() -> Path:
+    """Get database path, prioritizing writable locations for Streamlit Cloud."""
+    # Try project data directory first (local development)
+    project_db = Path(__file__).parent.parent / "data" / "cvfoster.db"
+    if project_db.parent.exists() and os.access(project_db.parent, os.W_OK):
+        logger.info(f"Using project data directory: {project_db.parent}")
+        return project_db
+    
+    # Fall back to home directory for Streamlit Cloud
+    home_db = Path.home() / ".cvfoster" / "cvfoster.db"
+    logger.info(f"Using home directory for database: {home_db.parent}")
+    return home_db
+
+DB_PATH = _get_db_path()
 
 class DatabaseManager:
     """Manage SQLite database for CVFoster."""
@@ -148,9 +162,13 @@ class DatabaseManager:
             
             conn.commit()
             cv_id = cursor.lastrowid
-            logger.info(f"Saved CV: {filename} (ID: {cv_id})")
+            logger.info(f"Saved CV: {filename} (ID: {cv_id}) to {self.db_path}")
             return cv_id
         
+        except sqlite3.OperationalError as e:
+            logger.error(f"Database operational error (readonly or locked): {e}")
+            logger.error(f"Database path: {self.db_path}")
+            raise
         except Exception as e:
             logger.error(f"Failed to save CV: {e}")
             raise
