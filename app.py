@@ -405,6 +405,9 @@ def page_job_matching():
                     'title': job_data.get('title', 'N/A'),
                     'company': job_data.get('company', 'N/A'),
                     'location': job_data.get('location', 'N/A'),
+                    'description': job_data.get('description', 'No description available'),
+                    'skills': job_data.get('skills', ''),
+                    'seniority': job_data.get('seniority', 'N/A'),
                     'match_score': combined_score,
                     'score_breakdown': {
                         'semantic_pct': semantic_score * 100,

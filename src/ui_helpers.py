@@ -21,22 +21,27 @@ def render_score_breakdown(scores: Dict[str, str]) -> None:
     """
     col1, col2, col3 = st.columns(3)
     
+    # Format percentages with 2 decimal places
+    semantic_pct = f"{scores.get('semantic_pct', 0):.2f}%" if isinstance(scores.get('semantic_pct'), (int, float)) else 'N/A'
+    keyword_pct = f"{scores.get('keyword_pct', 0):.2f}%" if isinstance(scores.get('keyword_pct'), (int, float)) else 'N/A'
+    seniority_pct = f"{scores.get('seniority_pct', 0):.2f}%" if isinstance(scores.get('seniority_pct'), (int, float)) else 'N/A'
+    
     with col1:
         st.metric(
             "Semantic Match",
-            scores.get('semantic_pct', 'N/A')
+            semantic_pct
         )
     
     with col2:
         st.metric(
             "Keyword Overlap",
-            scores.get('keyword_pct', 'N/A')
+            keyword_pct
         )
     
     with col3:
         st.metric(
             "Seniority Match",
-            scores.get('seniority_pct', 'N/A')
+            seniority_pct
         )
 
 def render_match_result(match: Dict, index: int = 0) -> None:
@@ -52,17 +57,26 @@ def render_match_result(match: Dict, index: int = 0) -> None:
         
         with col1:
             st.markdown(f"**#{index + 1}: {match.get('title', 'Unknown')}**")
-            st.markdown(f"*{match.get('company', 'Unknown')}*")
+            company = match.get('company', 'Unknown')
+            location = match.get('location', '')
+            if location:
+                st.markdown(f"*{company} • {location}*")
+            else:
+                st.markdown(f"*{company}*")
         
         with col2:
             score = match.get('match_score', 0)
-            st.markdown(f"### {score:.2f} 📊")
+            # Format score with percentage representation
+            score_pct = score * 100
+            st.markdown(f"### {score:.2f}\n*({score_pct:.0f}%)*", help="Overall match score (0-1 scale)")
         
-        # Show description
-        st.text(match.get('description', 'No description'))
+        # Show description if available
+        description = match.get('description', 'No description available')
+        if description and description != 'No description':
+            st.markdown(f"**Description:** {description}")
         
         # Show score breakdown
-        st.markdown("**Score Breakdown:**")
+        st.markdown("**Score Breakdown** (weighted: Semantic 50% • Keyword 30% • Seniority 20%)")
         render_score_breakdown(match.get('score_breakdown', {}))
         
         # Show matched chunk
