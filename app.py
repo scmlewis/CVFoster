@@ -123,76 +123,56 @@ def load_sample_jobs() -> dict:
     return sample_jobs
 
 
-def get_sample_cv() -> str:
-    """Get a sample CV for quick testing."""
-    return """JOHN DOE
+def get_sample_cv(sample_index: int = 1) -> tuple:
+    """
+    Load a sample CV from file.
+    
+    Args:
+        sample_index: Sample number (1-4)
+    
+    Returns:
+        Tuple of (cv_text, source_filename)
+    """
+    sample_files = {
+        1: "Sample_CV_1_John_Doe.txt",
+        2: "Sample_CV_2_Sarah_Johnson.txt",
+        3: "Sample_CV_3_Michael_Chen.txt",
+        4: "Sample_CV_4_Emily_Rodriguez.docx"
+    }
+    
+    if sample_index not in sample_files:
+        sample_index = 1
+    
+    filename = sample_files[sample_index]
+    filepath = Path(__file__).parent / "data" / "samples" / filename
+    
+    try:
+        if filename.endswith('.txt'):
+            with open(filepath, 'r', encoding='utf-8') as f:
+                cv_text = f.read()
+        elif filename.endswith('.docx'):
+            # Parse DOCX
+            cv_text, _ = CVParser.parse(str(filepath))
+        else:
+            # Fallback to built-in Sample 1
+            cv_text = """JOHN DOE
 Senior Full-Stack Software Engineer
 john.doe@email.com | (555) 123-4567 | GitHub: github.com/johndoe | LinkedIn: linkedin.com/in/johndoe
 
 PROFESSIONAL SUMMARY
-Experienced full-stack software engineer with 7+ years of proven expertise in designing, developing, and deploying scalable cloud-based applications. Strong proficiency in Python, JavaScript, and cloud architecture (AWS/Azure). Proven track record of leading cross-functional teams to deliver high-quality software solutions on time and within budget. Passionate about clean code, best practices, and mentoring junior developers.
+Experienced full-stack software engineer with 7+ years of proven expertise in designing, developing, and deploying scalable cloud-based applications."""
+        
+        return cv_text, filename
+    except Exception as e:
+        logger.error(f"Failed to load sample CV {sample_index}: {e}")
+        # Return a fallback CV
+        cv_text = """JOHN DOE
+Senior Full-Stack Software Engineer
+john.doe@email.com | (555) 123-4567 | LinkedIn: linkedin.com/in/johndoe
 
-TECHNICAL SKILLS
-Languages: Python, JavaScript, TypeScript, SQL, HTML5, CSS3, Java
-Frameworks & Libraries: React, Vue.js, Django, Flask, FastAPI, Node.js, Express.js
-Cloud & DevOps: AWS (EC2, S3, Lambda, RDS), Azure, Docker, Kubernetes, CI/CD, Jenkins, GitHub Actions
-Databases: PostgreSQL, MongoDB, MySQL, Redis
-Tools & Practices: Git, REST APIs, GraphQL, Agile/Scrum, TDD, MVC Architecture
-
-PROFESSIONAL EXPERIENCE
-
-Senior Software Engineer | Tech Innovation Labs (2022 - Present)
-• Led development of microservices architecture serving 2M+ daily active users using Python FastAPI and Docker/Kubernetes
-• Implemented CI/CD pipeline reducing deployment time by 60% using GitHub Actions and AWS infrastructure
-• Mentored 5+ junior developers and conducted code reviews improving code quality by 40%
-• Optimized database queries reducing API response time from 500ms to 100ms
-• Architected scalable solutions handling 10,000+ requests per second
-
-Full-Stack Developer | Digital Solutions Inc (2019 - 2022)
-• Developed responsive web applications using React and Node.js, improving user engagement by 35%
-• Built RESTful APIs serving 50+ frontend clients with comprehensive documentation
-• Implemented real-time data synchronization using WebSockets reducing latency by 70%
-• Deployed applications to AWS infrastructure using Docker and managed Kubernetes clusters
-• Collaborated with product and design teams in Agile sprints to deliver features bi-weekly
-
-Junior Developer | StartUp Ventures (2017 - 2019)
-• Contributed to full-stack development of e-commerce platform using Django and React
-• Developed automated testing suite achieving 85% code coverage
-• Debugged and resolved production issues in a fast-paced startup environment
-• Participated in pair programming sessions improving code quality and knowledge sharing
-
-EDUCATION
-Bachelor of Science in Computer Science | State University (2017)
-GPA: 3.8/4.0
-Relevant Coursework: Data Structures, Algorithms, Database Systems, Software Engineering, Cloud Computing
-
-CERTIFICATIONS & ACHIEVEMENTS
-• AWS Certified Solutions Architect - Professional (2023)
-• Docker Certified Associate (2022)
-• Led successful migration of legacy system to microservices architecture
-• Contributed to 3 open-source projects with 500+ GitHub stars
-• Speaker at Python Meetup on "Building Scalable APIs with FastAPI" (2023)
-
-PROJECTS
-Real-time Collaboration Platform (2022)
-• Designed and implemented WebSocket-based collaboration tool for remote teams
-• Tech Stack: React, Node.js, PostgreSQL, Docker, Redis
-• Deployed on AWS handling 50,000+ concurrent users
-
-API Gateway Solution (2021)
-• Created custom API gateway providing authentication and rate limiting
-• Tech Stack: Python FastAPI, MongoDB, Redis, Docker
-• Reduced infrastructure costs by 30%
-
-Performance Optimization Initiative (2020)
-• Systematically identified and resolved performance bottlenecks across 20+ services
-• Reduced average response time by 45% and reduced server costs by 25%
-
-ADDITIONAL INFORMATION
-Languages: English (Native), Spanish (Fluent)
-Interests: Open-source contributions, cloud architecture, machine learning applications
-"""
-
+PROFESSIONAL SUMMARY
+Experienced full-stack software engineer."""
+        return cv_text, "Sample_CV_1_John_Doe.txt"
 
 def page_upload_parse():
     """Upload and Parse page."""
@@ -217,17 +197,31 @@ def page_upload_parse():
     
     with col2:
         st.markdown("### Or Try Sample")
+        sample_options = {
+            "1️⃣ John Doe (Software Engineer)": 1,
+            "2️⃣ Sarah Johnson (Data Scientist)": 2,
+            "3️⃣ Michael Chen (Product Manager)": 3,
+            "4️⃣ Emily Rodriguez (UX Designer)": 4
+        }
+        selected_sample = st.selectbox(
+            "Select a sample CV",
+            options=list(sample_options.keys()),
+            key='sample_select'
+        )
+        
         if st.button("📋 Load Sample CV", use_container_width=True, type="secondary"):
-            st.session_state.state.cv_text = get_sample_cv()
+            sample_index = sample_options[selected_sample]
+            cv_text, source_filename = get_sample_cv(sample_index)
+            st.session_state.state.cv_text = cv_text
             st.session_state.state.cv_metadata = {
-                'source': 'Sample_CV_John_Doe.txt',
-                'format': 'TXT',
+                'source': source_filename,
+                'format': 'TXT' if source_filename.endswith('.txt') else 'DOCX',
                 'extraction_method': 'Template'
             }
             # Parse sections from sample
             st.session_state.state.cv_sections = CVParser.extract_sections(st.session_state.state.cv_text)
             st.session_state.sample_cv_loaded = True
-            st.success("✅ Sample CV loaded! Go to Job Matching or Review to continue.")
+            st.success(f"✅ {selected_sample} loaded! Go to Job Matching or Review to continue.")
             st.rerun()
     
     st.info("Supported formats:\n- PDF\n- DOCX\n- TXT")
