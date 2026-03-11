@@ -434,11 +434,12 @@ def get_db() -> DatabaseManager:
     Get or create database instance.
     Uses @st.cache_resource if Streamlit is available for proper session management.
     Falls back to global singleton otherwise.
+    Cache version: 2 (includes delete_cv method)
     """
     global _db_instance
     
     if STREAMLIT_AVAILABLE:
-        @st.cache_resource
+        @st.cache_resource(show_spinner=False)
         def _init_db():
             return DatabaseManager()
         return _init_db()
