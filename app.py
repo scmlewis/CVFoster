@@ -7,8 +7,21 @@ import streamlit as st
 import logging
 import json
 import tempfile
+import os
 from pathlib import Path
 from typing import Optional
+
+# Support Streamlit Cloud secrets - map them to os.environ for consistency
+try:
+    if hasattr(st, 'secrets') and st.secrets:
+        try:
+            for key, value in st.secrets.items():
+                if key not in os.environ:
+                    os.environ[key] = str(value)
+        except Exception:
+            pass  # st.secrets might not be available or might be empty
+except Exception:
+    pass
 
 # Local imports
 from src.parse import CVParser

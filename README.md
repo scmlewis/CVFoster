@@ -28,7 +28,25 @@ pip install -r requirements.txt
 python -m spacy download en_core_web_sm
 ```
 
-### 2. Run the App
+### 2. (Optional) Configure Azure OpenAI
+
+The app works with **or without** Azure OpenAI credentials:
+- **With Azure**: Uses AI-powered rewriting (recommended)
+- **Without Azure**: Uses template-based rewriting (works out of the box)
+
+To enable Azure rewriting:
+```bash
+# Copy template
+cp .env.example .env or Copy-Item .env.example .env (Windows)
+
+# Edit .env with your Azure OpenAI credentials
+AZURE_OPENAI_API_KEY=your_key_here
+AZURE_ENDPOINT=https://your-resource.openai.azure.com/
+AZURE_API_VERSION=2025-02-01-preview
+AZURE_MODEL=gpt-4o-mini
+```
+
+### 3. Run the App
 
 ```bash
 streamlit run app.py
@@ -36,11 +54,11 @@ streamlit run app.py
 
 The app will open at `http://localhost:8501`
 
-### 3. Usage
+### 4. Usage
 
-1. **Upload & Parse**: Go to "Upload & Parse" page and upload your CV
-2. **Job Matching**: Select a CV section and find matching job postings
-3. **Rewrite**: Pick a section to optimize with AI
+1. **Upload & Parse**: Go to "Upload & Parse" and upload your CV (PDF, DOCX, or TXT)
+2. **Job Matching**: Find relevant job postings based on your CV
+3. **Rewrite**: Optimize CV sections with AI (requires Azure credentials for best results)
 
 ## Project Structure
 

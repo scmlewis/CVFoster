@@ -44,6 +44,28 @@ streamlit run app.py
 
 The app opens automatically at: `http://localhost:8501`
 
+### (Optional) Step 4: Configure Azure OpenAI
+
+For AI-powered CV rewriting (optional - template-based fallback is available):
+
+1. Copy the `.env.example` file to `.env`:
+   ```powershell
+   Copy-Item .env.example .env
+   ```
+
+2. Edit `.env` with your Azure OpenAI credentials:
+   ```
+   AZURE_OPENAI_API_KEY=your_api_key_here
+   AZURE_ENDPOINT=https://your-resource.openai.azure.com/
+   AZURE_API_VERSION=2025-02-01-preview
+   AZURE_MODEL=gpt-4o-mini
+   SKIP_LLM_INIT=false
+   ```
+
+3. Get your credentials from [Azure Portal](https://portal.azure.com#@hotmail.com/resource/subscriptions)
+
+4. **Note:** The `.env` file is automatically excluded from git (see `.gitignore`)
+
 ---
 
 ## 🐧 Quick Start (Linux/Mac)
@@ -72,6 +94,30 @@ python validate.py
 ```bash
 streamlit run app.py
 ```
+
+The app opens automatically at: `http://localhost:8501`
+
+### (Optional) Step 4: Configure Azure OpenAI
+
+For AI-powered CV rewriting (optional - template-based fallback is available):
+
+1. Copy the `.env.example` file to `.env`:
+   ```bash
+   cp .env.example .env
+   ```
+
+2. Edit `.env` with your Azure OpenAI credentials:
+   ```
+   AZURE_OPENAI_API_KEY=your_api_key_here
+   AZURE_ENDPOINT=https://your-resource.openai.azure.com/
+   AZURE_API_VERSION=2025-02-01-preview
+   AZURE_MODEL=gpt-4o-mini
+   SKIP_LLM_INIT=false
+   ```
+
+3. Get your credentials from [Azure Portal](https://portal.azure.com)
+
+4. **Note:** The `.env` file is automatically excluded from git (see `.gitignore`)
 
 ---
 
@@ -206,6 +252,62 @@ python validate.py
 1. Run validation script: `python validate.py`
 2. Check logs in terminal for errors
 3. Ensure spacy model is installed: `python -m spacy download en_core_web_sm`
+
+### Issue: Azure OpenAI features not working
+**Solution:**
+1. The app automatically falls back to template-based rewriting if Azure is unavailable
+2. To enable Azure features, configure `.env` file (see Step 4 above)
+3. Verify credentials with: `python test_azure_integration.py`
+4. Check that `.env` file exists in project root
+
+### Issue: App shows "Template Mode" instead of Azure OpenAI
+**Cause:** The `.env` file is missing or credentials are incorrect  
+**Solution:**
+- Create `.env` file from `.env.example`
+- Fill in your Azure credentials
+- Restart the app: `streamlit run app.py`
+- You'll see "✅ Azure OpenAI: Connected" in the System Status
+
+---
+
+## ☁️ Deploying to Streamlit Cloud
+
+### Step 1: Push to GitHub
+
+```bash
+git add .
+git commit -m "Add CVFoster"
+git push origin main
+```
+
+### Step 2: Deploy on Streamlit Cloud
+
+1. Go to [streamlit.io/cloud](https://streamlit.io/cloud)
+2. Click "New app" > Select your GitHub repo
+3. Choose: `app.py` as main file
+4. Click "Deploy"
+
+### Step 3: Add Secrets for Azure (Optional)
+
+1. In Streamlit Cloud settings, go to **Secrets**
+2. Paste your credentials in TOML format:
+   ```toml
+   AZURE_OPENAI_API_KEY = "your_api_key"
+   AZURE_ENDPOINT = "https://your-resource.openai.azure.com/"
+   AZURE_API_VERSION = "2025-02-01-preview"
+   AZURE_MODEL = "gpt-4o-mini"
+   SKIP_LLM_INIT = false
+   ```
+3. Click "Save"
+
+### Step 4: Monitor Deployment
+
+The app will redeploy automatically. Check logs in Streamlit Cloud UI.
+
+**Notes:**
+- First load may take longer (models downloading)
+- `.env` file is NOT used on Streamlit Cloud (use Secrets instead)
+- Template-based rewriting works without Azure (no secrets needed)
 
 ---
 

@@ -10,8 +10,21 @@ import re
 import os
 from dotenv import load_dotenv
 
-# Load environment variables from .env file
+# Load environment variables from .env file (local development)
 load_dotenv()
+
+# Support Streamlit Cloud secrets - map them to os.environ for consistency
+try:
+    import streamlit as st
+    if hasattr(st, 'secrets') and st.secrets:
+        try:
+            for key, value in st.secrets.items():
+                if key not in os.environ:
+                    os.environ[key] = str(value)
+        except:
+            pass  # st.secrets might not be available in all contexts
+except ImportError:
+    pass
 
 logger = logging.getLogger(__name__)
 
