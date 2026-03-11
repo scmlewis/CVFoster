@@ -1,15 +1,35 @@
 """
 Embedding and indexing module.
 Handles sentence embeddings using sentence-transformers and FAISS indexing.
+Optional module - gracefully degrades if dependencies unavailable.
 """
 
 import logging
-import numpy as np
-import faiss
 from typing import List, Dict, Tuple, Optional
-from sentence_transformers import SentenceTransformer
 
 logger = logging.getLogger(__name__)
+
+# Try to import optional ML dependencies
+try:
+    import numpy as np
+    NUMPY_AVAILABLE = True
+except ImportError:
+    NUMPY_AVAILABLE = False
+    logger.warning("numpy not available - embedding features disabled")
+
+try:
+    import faiss
+    FAISS_AVAILABLE = True
+except ImportError:
+    FAISS_AVAILABLE = False
+    logger.warning("faiss not available - vector search disabled")
+
+try:
+    from sentence_transformers import SentenceTransformer
+    TRANSFORMERS_AVAILABLE = True
+except ImportError:
+    TRANSFORMERS_AVAILABLE = False
+    logger.warning("sentence-transformers not available - semantic search disabled")
 
 class EmbeddingIndex:
     """Handler for embeddings and vector search."""
@@ -21,6 +41,12 @@ class EmbeddingIndex:
         Args:
             model_name: HuggingFace model identifier
         """
+        if not TRANSFORMERS_AVAILABLE or not FAISS_AVAILABLE or not NUMPY_AVAILABLE:
+            logger.warning("ML dependencies not available. Embedding features will be disabled.")
+            self.available = False
+            return
+        
+        self.available = True
         self.model_name = model_name
         self.model = SentenceTransformer(model_name)
         self.embedding_dim = self.model.get_sentence_embedding_dimension()
